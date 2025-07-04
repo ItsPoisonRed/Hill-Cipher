@@ -1,5 +1,6 @@
 import numpy as np
 from sympy import Matrix
+import string
 
 def letter_to_number(letter):
     return ord(letter.lower()) - ord('a')
@@ -51,7 +52,7 @@ def decode_3x3(matrix_key, groups):
             print(letter, end="")
 
 
-key= input("Enter the key: ").strip()
+key= input("Enter the key: ").strip().lower().translate(str.maketrans("", "", string.punctuation)).replace(" ", "")
 key_matrix = []
 
 choice = input("Choose an option (Encode or Decode): ").replace(" ", "").strip().upper()
@@ -72,7 +73,7 @@ else:
     raise ValueError("Key matrix must be 2x2 or 3x3")
 
 if choice == "ENCODE":
-    Plaintext = input("Enter the plaintext: ").replace(" ", "").strip()
+    Plaintext = input("Enter the plaintext: ").replace(" ", "").strip().lower().translate(str.maketrans("", "", string.punctuation))
     Message_matrix = []
     if len(Plaintext)%matrix_type!=0:
         Plaintext += "z"*(matrix_type-len(Plaintext)%matrix_type)
@@ -85,7 +86,7 @@ if choice == "ENCODE":
         groups.append(Message_matrix[i:i+matrix_type])
 
 elif choice == "DECODE":
-    Ciphertext = input("Enter the ciphertext: ").replace(" ", "").strip()
+    Ciphertext = input("Enter the ciphertext: ").replace(" ", "").strip().lower().translate(str.maketrans("", "", string.punctuation))
     Ciphertext_matrix = []
     if len(Ciphertext)%matrix_type!=0:
         Ciphertext += "z"*(matrix_type-len(Ciphertext)%matrix_type)
