@@ -82,7 +82,7 @@ def get_matrix() -> tuple[np.ndarray, int, int]:
             random.seed(int(key_input))
             key = generate_key()
             matrix_type = get_matrix_type(key)
-        elif key_input == "random":
+        elif key_input == "random" or key_input == "r":
             key = generate_key()
             matrix_type = get_matrix_type(key)
         else:
@@ -115,14 +115,14 @@ def get_matrix() -> tuple[np.ndarray, int, int]:
 def main():
     matrix_key, matrix_type, det = get_matrix()
     choice = input("Encode or Decode: ").strip().lower()
-    if choice == "encode":
+    if choice == "encode" or choice == "e":
         plaintext = input("Enter plaintext: ").replace(" ", "").strip().lower().translate(str.maketrans("", "", string.punctuation))
         if len(plaintext) % matrix_type != 0:
             plaintext += "z" * (matrix_type - len(plaintext) % matrix_type)
         message_matrix = [letter_to_number(letter) for letter in plaintext]
         groups = [message_matrix[i:i+matrix_type] for i in range(0, len(message_matrix), matrix_type)]
         encode(matrix_key, groups)
-    elif choice == "decode":
+    elif choice == "decode" or choice == "d":
         ciphertext = input("Enter ciphertext: ").replace(" ", "").strip().lower().translate(str.maketrans("", "", string.punctuation))
         ciphertext_matrix = [letter_to_number(letter) for letter in ciphertext]
         groups_cipher = [ciphertext_matrix[i:i+matrix_type] for i in range(0, len(ciphertext_matrix), matrix_type)]
