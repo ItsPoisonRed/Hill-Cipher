@@ -4,6 +4,8 @@ import string
 import random
 import nltk
 from nltk.corpus import words
+from diffie_hellman import *
+import sys
 
 dict_inverse = {
     1:1, 3:9, 5:21, 7:15, 9:3, 11:19, 15:7, 17:23, 19:11, 21:5, 23:17, 25:25,
@@ -76,11 +78,18 @@ def generate_key() -> str:
             return key
 
 def get_matrix() -> tuple[np.ndarray, int, int]:
+    global p, private_key
     while True:
-        key_input = input("Enter the key (4 or 9 letters), a seed (integer), or 'random': ").strip().lower().translate(str.maketrans("", "", string.punctuation)).replace(" ", "")
+        key_input = input("Enter the key (4 or 9 letters), a seed (integer), a public key (integer), or 'random': ").strip().lower().translate(str.maketrans("", "", string.punctuation)).replace(" ", "")
         if key_input.isdigit():
-            random.seed(int(key_input))
-            key = generate_key()
+            num_type = input("Is this a public key or a seed? (p/s): ").strip().lower()
+            if num_type == "p":               
+                key_p = int(key_input) ** int(private_key) % int(p)
+                random.seed(key_p)
+                key = generate_key()
+            else:
+                random.seed(int(key_input))
+                key = generate_key()
             matrix_type = get_matrix_type(key)
         elif key_input == "random" or key_input == "r":
             key = generate_key()
@@ -112,6 +121,11 @@ def get_matrix() -> tuple[np.ndarray, int, int]:
                 continue
             return matrix_key, matrix_type, det
 
+def generate_key_pair():
+    p, g, private_key, public_key = main_dh()
+    with open("key_pair.txt", "w") as file:
+        file.write(f"p: {p}\ng: {g}\nprivate_key: {private_key}\npublic_key: {public_key}")
+
 def main():
     matrix_key, matrix_type, det = get_matrix()
     choice = input("Encode or Decode: ").strip().lower()
@@ -131,4 +145,14 @@ def main():
         print("Invalid choice.")
 
 if __name__ == "__main__":
+    try:
+        with open("key_pair.txt", "r") as file:
+            lines = file.read().splitlines()
+            p = int(lines[0][3:])  # remove 'p: '
+            g = int(lines[1][3:])  # remove 'g: '
+            private_key = int(lines[2][12:])  # remove 'private_key: '
+            public_key = int(lines[3][11:])  # remove 'public_key: '
+    except FileNotFoundError:
+        generate_key_pair()
+        sys.exit()
     main()
