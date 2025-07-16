@@ -11,7 +11,7 @@ def generate_key_pair() -> None:
 
     p, g, private_key, public_key = main_dh()
     n, e, d = main_rsa()
-    print(f"Diffie-Hellman keys: {p}, {g}, {public_key}")
+    print(f"Diffie-Hellman key: {public_key}")
     print(f"RSA keys: {e}, {n}")
     with open("key_pair.json", "w") as file:
         json.dump(

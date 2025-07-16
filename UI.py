@@ -27,27 +27,42 @@ def prompt_for_key(p: int, private_key: int, n: int, d: int) -> Tuple[str, np.nd
                 "Enter the key (4 or 9 letters), a seed (integer), a public key (integer), or 'random':\n"
                 "  - Example key: 'test' or 'algorithm'\n"
                 "  - Example seed: 12345\n"
-                "  - Example Diffie-Hellman public key: 67890 or RSA public key: 67890, 12345\n"
+                "  - Example Diffie-Hellman public key or RSA public key\n"
                 "  - Or type 'random' for a random key\n> "
             )
             .strip()
             .lower()
-            .translate(str.maketrans("", "", string.punctuation))
             .replace(" ", "")
         )
-        if key_input.isdigit():
+        if is_int_pair(key_input):
+                print(f"Using RSA Trapdoor Permutation")
+                key_num=secrets.randbits(1024)
+                parts=key_input.split(',')
+                key_num2=pow(key_num, int(parts[0]), int(parts[1]))
+                print(f"key_num: {key_num}")
+                random.seed(key_num)
+                key=generate_key()
+                matrix_type = get_matrix_type(key)
+                key_return=key_num2
+        elif key_input in ("random", "r"):
+            print("Generating a random key...")
+            key = generate_key()
+            matrix_type = get_matrix_type(key)
+            key_return = key
+        elif key_input.isdigit():
             print(f"Using seed/public key: {key_input}")
             num_type = input("Is this a public key or a seed? (p/s): ").strip().lower()
             if num_type == "p":
                 key_protocol = input("Would you like to use RSA Trapdoor Permutation or Diffie-Hellman Protocol? (r/d): ").strip().lower()
                 if key_protocol == "r":
-                    key_p = int(key_input) ** int(d) % int(n)
+                    key_p = pow(int(key_input), int(d), int(n))
+                    print(f"key_p: {key_p}")
                     random.seed(key_p)
                     key = generate_key()
                     keys = load_keys()
                     key_return = keys["e"],keys["n"]
                 else:
-                    key_p = int(key_input) ** int(private_key) % int(p)
+                    key_p = pow(int(key_input), int(private_key), int(p))
                     random.seed(key_p)
                     key = generate_key()
                     keys = load_keys()
@@ -57,18 +72,6 @@ def prompt_for_key(p: int, private_key: int, n: int, d: int) -> Tuple[str, np.nd
                 key = generate_key()
                 key_return = key_input
             matrix_type = get_matrix_type(key)
-        elif key_input in ("random", "r"):
-            print("Generating a random key...")
-            key = generate_key()
-            matrix_type = get_matrix_type(key)
-            key_return = key
-        elif is_int_pair(key_input):
-                key_num=secrets.randbits(1024)
-                parts=key_input.split(',')
-                key_num2=key_num*int(parts[0])%int(parts[1])
-                random.seed(key_num2)
-                key=generate_key()
-                key_return=key
         else:
             key = key_input
             if not key.isalpha():
@@ -164,7 +167,7 @@ def print_result(result: str, mode: str, key: str) -> None:
         send_email(return_string, mode)
 
     else:
-        return_string = (f"Key: {key}")
+        return_string = (f"Decoded text: {result}\nKey: {key}")
         print(return_string)
         send_email(return_string, mode)
 

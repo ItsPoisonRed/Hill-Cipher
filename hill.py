@@ -47,7 +47,7 @@ def main() -> None:
             key = generate_key()
             key_return = args.key
         elif args.key_type == "public key":
-            key = int(args.key) ** int(private_key) % int(p)
+            key = pow(int(args.key), int(private_key), int(p))
             key_return = public_key
         elif args.key_type == "random":
             key = generate_key()

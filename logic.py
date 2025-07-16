@@ -4,8 +4,8 @@ import numpy as np
 import sys
 from typing import List
 from sympy import Matrix
-import secrets
 from typing import List
+import random
 
 dict_inverse = {
     1: 1,
@@ -121,7 +121,7 @@ def generate_key() -> str:
         )
         sys.exit()
     while True:
-        key = secrets.choice(filtered_words).lower()
+        key = random.choice(filtered_words).lower()
         matrix_type = get_matrix_type(key)
         key_matrix = [letter_to_number(letter) for letter in key]
         if matrix_type == 2:
