@@ -25,8 +25,9 @@ def send_email(result: str, mode: str) -> None:
     if email == "y":
         user_email = input("Enter your email: ").strip()
         sender_email = input("Enter the recipient's email: ").strip()
+        add_msg = input("Enter any information besides the text and key you want to send: ").strip()
         msg = EmailMessage()
-        msg.set_content(result)
+        msg.set_content(result+'\n'+add_msg)
         msg["Subject"] = subject
         msg["From"] = user_email
         msg["To"] = sender_email
