@@ -10,7 +10,7 @@ from email_utils import send_email
 from key import load_keys
 
 
-def prompt_for_key(p: int, private_key: int, n: int, d: int) -> Tuple[str, np.ndarray, int, int]:
+def prompt_for_key(p: int, private_key: int, n: int, d: int) -> Tuple[str|int|tuple[int,int], np.ndarray, int, int]:
     """
     Prompt the user for a key, seed, public key, or random, and return a valid Hill cipher matrix.
     Args:
@@ -36,10 +36,10 @@ def prompt_for_key(p: int, private_key: int, n: int, d: int) -> Tuple[str, np.nd
         )
         if is_int_pair(key_input):
                 print(f"Using RSA Trapdoor Permutation")
-                key_num=secrets.randbits(1024)
+                print("Warning: Do not send a message to multiple recipients with the same public key to avoid Håstad's broadcast attack")
+                key_num=secrets.randbits(2048)
                 parts=key_input.split(',')
                 key_num2=pow(key_num, int(parts[0]), int(parts[1]))
-                print(f"key_num: {key_num}")
                 random.seed(key_num)
                 key=generate_key()
                 matrix_type = get_matrix_type(key)
@@ -53,8 +53,9 @@ def prompt_for_key(p: int, private_key: int, n: int, d: int) -> Tuple[str, np.nd
             print(f"Using seed/public key: {key_input}")
             num_type = input("Is this a public key or a seed? (p/s): ").strip().lower()
             if num_type == "p":
-                key_protocol = input("Would you like to use RSA Trapdoor Permutation or Diffie-Hellman Protocol? (r/d): ").strip().lower()
+                key_protocol = input("Are you using an RSA Trapdoor Permutation or the Diffie-Hellman Protocol? (r/d): ").strip().lower()
                 if key_protocol == "r":
+                    print(f"Using RSA Trapdoor Permutation")
                     key_p = pow(int(key_input), int(d), int(n))
                     print(f"key_p: {key_p}")
                     random.seed(key_p)
@@ -62,17 +63,20 @@ def prompt_for_key(p: int, private_key: int, n: int, d: int) -> Tuple[str, np.nd
                     keys = load_keys()
                     key_return = keys["e"],keys["n"]
                 else:
+                    print(f"Using Diffie-Hellman Protocol")
                     key_p = pow(int(key_input), int(private_key), int(p))
                     random.seed(key_p)
                     key = generate_key()
                     keys = load_keys()
                     key_return = keys["public_key"]
             else:
+                print(f"Using seed: {key_input}")
                 random.seed(int(key_input))
                 key = generate_key()
                 key_return = key_input
             matrix_type = get_matrix_type(key)
         else:
+            print(f"Using key: {key_input}")
             key = key_input
             if not key.isalpha():
                 print("Key must only contain letters.")
@@ -154,7 +158,7 @@ def prompt_for_ciphertext() -> str:
     return ciphertext
 
 
-def print_result(result: str, mode: str, key: str) -> None:
+def print_result(result: str, mode: str, key: str|int|tuple[int,int]) -> None:
     """
     Print the encoded or decoded result.
     Args:
@@ -187,4 +191,10 @@ def parse_args():
     )
     parser.add_argument("--key", type=str, help="Key to use (4 or 9 letters)")
     parser.add_argument("--text", type=str, help="Text to encode or decode")
+    parser.add_argument("--public-key-type", type=str, help="Public key type (r or RSA, d or DH)")
+    parser.add_argument("--send-email", action="store_true", help="Send email")
+    parser.add_argument("--email-to", type=str, help="Email to send to")
+    parser.add_argument("--my-email", type=str, help="Your email")
+    parser.add_argument("--app-password", type=str, help="App password")
+    parser.add_argument("--email-body", type=str, help="Email body")
     return parser.parse_args()
